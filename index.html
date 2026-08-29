@@ -11,9 +11,9 @@
      ============================================================ -->
 <script>
   window.ASKOBI_CONFIG = {
-    SUPABASE_URL: "https://mcnzrsjmpucmiwilvtnw.supabase.co",       // e.g. https://xxxxx.supabase.co
-    SUPABASE_ANON_KEY: "sb_publishable_7dUQj2ciRoKMIqI3V6BYmA_c8sSV7eZ",
-    PAYSTACK_PUBLIC_KEY: "pk_test_95a0c69d379f2ebf2f413d5ef267aa2770b4b8dc",  // starts with pk_
+    SUPABASE_URL: "YOUR_SUPABASE_PROJECT_URL",       // e.g. https://xxxxx.supabase.co
+    SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_PUBLIC_KEY",
+    PAYSTACK_PUBLIC_KEY: "YOUR_PAYSTACK_PUBLIC_KEY",  // starts with pk_
     ASSESSMENT_FEE_KOBO: 2500000,                      // ₦25,000 in kobo (Paystack uses kobo)
     NOTIFY_WHATSAPP: "2348025451862",
     NOTIFY_EMAIL: "askobihealthcare@gmail.com"
@@ -365,7 +365,8 @@
     <div class="brand"><div class="mark">A</div><div class="word">ASK<span>OBI</span> CARE</div></div>
     <div style="display:flex; align-items:center; gap:18px;">
       <div class="topbar-social">
-        <a href="https://instagram.com/askobicare" target="_blank" title="Instagram">IG</a>
+        <a href="https://instagram.com/YOUR_HANDLE" target="_blank" title="Instagram">IG</a>
+        <a href="https://facebook.com/YOUR_PAGE" target="_blank" title="Facebook">FB</a>
       </div>
       <a class="topbar-phone" href="tel:+2348025451862"><span class="dot"></span>+234 802 545 1862</a>
     </div>
@@ -750,8 +751,9 @@
   // SUPABASE CLIENT
   // ============================================================
   const cfg = window.ASKOBI_CONFIG;
- let sb = null;  if (cfg.SUPABASE_URL && cfg.SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL") {
-    supabase = window.sb.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  let sb = null;
+  if (cfg.SUPABASE_URL && cfg.SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL") {
+    sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
   }
 
   // ---------------- state ----------------
@@ -996,7 +998,7 @@
 
   // ---------------- save to Supabase ----------------
   async function saveBookingToSupabase(extra){
-   if(!sb){ 
+    if(!sb){
       console.warn('Supabase not configured — skipping database save.');
       return null;
     }
@@ -1013,7 +1015,7 @@
   }
 
   async function updateBookingPaymentStatus(reference){
-    if(!sb|| !bookingRowId) return;
+    if(!sb || !bookingRowId) return;
     await sb.from('bookings')
       .update({ payment_status:'paid', payment_reference: reference })
       .eq('id', bookingRowId);
