@@ -4,6 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AskObi Care — Book Care</title>
+
+<!-- ============================================================
+     CONFIG — paste your real keys here before you go live.
+     Where to get each one is explained in the setup guide.
+     ============================================================ -->
+<script>
+  window.ASKOBI_CONFIG = {
+    SUPABASE_URL: "https://mcnzrsjmpucmiwilvtnw.supabase.co",       // e.g. https://xxxxx.supabase.co
+    SUPABASE_ANON_KEY: "sb_publishable_7dUQj2ciRoKMIqI3V6BYmA_c8sSV7eZ",
+    PAYSTACK_PUBLIC_KEY: "pk_test_95a0c69d379f2ebf2f413d5ef267aa2770b4b8dc",  // starts with pk_
+    ASSESSMENT_FEE_KOBO: 2500000,                      // ₦25,000 in kobo (Paystack uses kobo)
+    NOTIFY_WHATSAPP: "2348025451862",
+    NOTIFY_EMAIL: "askobihealthcare@gmail.com"
+  };
+</script>
+
+<!-- Supabase + Paystack SDKs -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+
 <style>
   :root{
     --navy:#17203a;
@@ -35,7 +55,6 @@
   a{color:inherit;}
   img{max-width:100%;display:block;}
 
-  /* ---------- top bar ---------- */
   .topbar{
     position:sticky; top:0; z-index:50;
     background:rgba(255,255,255,0.92);
@@ -59,8 +78,14 @@
     display:flex; align-items:center; gap:6px;
   }
   .topbar-phone .dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;}
+  .topbar-social{display:flex; gap:12px; align-items:center;}
+  .topbar-social a{
+    width:28px; height:28px; border-radius:50%; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--navy);
+    text-decoration:none; transition:.15s ease;
+  }
+  .topbar-social a:hover{border-color:var(--gold); color:var(--gold-deep);}
 
-  /* ---------- hero ---------- */
   .hero{
     background:
       radial-gradient(1100px 420px at 50% -120px, rgba(198,160,82,0.10), transparent 60%),
@@ -96,14 +121,12 @@
   .trust-item{font-size:12.5px; color:var(--gray); display:flex; align-items:center; gap:8px; font-weight:600;}
   .trust-item .ico{color:var(--gold-deep); font-size:15px;}
 
-  /* ---------- sections ---------- */
   .section{max-width:1120px; margin:0 auto; padding:64px 22px;}
   .section-head{text-align:center; max-width:640px; margin:0 auto 34px;}
   .section-head .kicker{margin-bottom:10px;}
   .section-head h2{font-size:clamp(22px,3.2vw,30px); color:var(--navy); margin:0 0 10px;}
   .section-head p{color:var(--gray); font-size:14.5px; line-height:1.6; margin:0;}
 
-  /* ---------- wizard shell ---------- */
   .wizard{
     background:var(--cream);
     border:1px solid var(--gold-light);
@@ -139,7 +162,6 @@
   .step-title{font-size:18px; color:var(--navy); margin:0 0 4px;}
   .step-sub{font-size:13px; color:var(--gray); margin:0 0 22px;}
 
-  /* ---------- plan cards ---------- */
   .plan-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:22px;}
   @media (max-width:640px){.plan-grid{grid-template-columns:1fr;}}
   .plan-card{
@@ -203,7 +225,6 @@
   .livein-card .price{font-size:14px; color:var(--gold-deep); font-weight:700; font-family:Georgia,serif;}
   .livein-card p{font-size:10.8px; color:var(--gray); margin:6px 0 0; line-height:1.4;}
 
-  /* ---------- form fields ---------- */
   .field{margin-bottom:16px;}
   .field label{
     display:block; font-size:12px; font-weight:700; color:var(--navy); margin-bottom:6px;
@@ -245,7 +266,6 @@
   }
   .consent input{margin-top:3px;}
 
-  /* ---------- summary card (step 5) ---------- */
   .summary-card{
     background:#fff; border:1px solid var(--gold-light); border-radius:12px; padding:20px; margin-bottom:18px;
   }
@@ -261,7 +281,21 @@
   .summary-total .k{font-size:13px; font-weight:700; color:var(--navy);}
   .summary-total .v{font-family:Georgia,serif; font-size:22px; color:var(--gold-deep); font-weight:700;}
 
-  .send-options{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px;}
+  .pay-box{
+    background:var(--navy); border-radius:14px; padding:22px; margin-top:22px; color:#fff;
+  }
+  .pay-box h4{margin:0 0 4px; font-size:15px; color:#fff; font-family:Georgia,serif;}
+  .pay-box p{margin:0 0 16px; font-size:12px; color:rgba(255,255,255,0.7); line-height:1.5;}
+  .pay-btn{
+    width:100%; background:var(--gold); color:var(--navy); border:none; padding:15px;
+    border-radius:10px; font-size:14.5px; font-weight:800; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .pay-btn:disabled{opacity:.5; cursor:not-allowed;}
+  .pay-secure{display:flex; align-items:center; justify-content:center; gap:6px; margin-top:12px;
+    font-size:10.5px; color:rgba(255,255,255,0.55);}
+
+  .send-options{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
   @media (max-width:520px){.send-options{grid-template-columns:1fr;}}
   .send-btn{
     display:flex; align-items:center; justify-content:center; gap:8px;
@@ -272,7 +306,6 @@
   .send-btn.mail{background:var(--navy); color:#fff;}
   .send-note{font-size:11px; color:var(--gray-light); text-align:center; margin-top:10px;}
 
-  /* ---------- nav buttons ---------- */
   .wizard-nav{
     display:flex; justify-content:space-between; align-items:center;
     padding:20px 26px 26px; gap:12px;
@@ -289,7 +322,6 @@
   .req-warn{font-size:11.5px; color:#a03; margin-top:4px; display:none;}
   .req-warn.show{display:block;}
 
-  /* ---------- pillars / trust section ---------- */
   .pillars{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
   @media (max-width:860px){.pillars{grid-template-columns:repeat(2,1fr);}}
   @media (max-width:480px){.pillars{grid-template-columns:1fr;}}
@@ -301,11 +333,18 @@
   .pillar h4{font-size:14px; color:var(--navy); margin:0 0 4px; font-family:Georgia,serif;}
   .pillar p{font-size:11.5px; color:var(--gray); margin:0; line-height:1.5;}
 
-  /* ---------- footer ---------- */
   footer{background:var(--navy); color:#fff; padding:46px 22px 26px; text-align:center;}
+  footer .brand{justify-content:center;}
   footer .brand .word{color:#fff;}
   footer .foot-tag{font-family:Georgia,serif; font-style:italic; font-size:14px; color:var(--gold-light);
     margin:16px 0 22px;}
+  footer .foot-social{display:flex; gap:14px; justify-content:center; margin-bottom:20px;}
+  footer .foot-social a{
+    width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.25);
+    display:flex; align-items:center; justify-content:center; font-size:13px; color:#fff; text-decoration:none;
+    transition:.15s ease;
+  }
+  footer .foot-social a:hover{border-color:var(--gold); background:rgba(198,160,82,0.15);}
   footer .foot-contact{font-size:12.5px; color:rgba(255,255,255,0.75); margin-bottom:6px;}
   footer .foot-fine{font-size:10.5px; color:rgba(255,255,255,0.4); margin-top:22px;}
 
@@ -313,8 +352,10 @@
     position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
     background:var(--navy); color:#fff; padding:12px 20px; border-radius:999px; font-size:12.5px;
     box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.25s ease; z-index:100;
+    max-width:88vw; text-align:center;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast.error{background:#a03;}
 </style>
 </head>
 <body>
@@ -322,7 +363,13 @@
 <div class="topbar">
   <div class="topbar-inner">
     <div class="brand"><div class="mark">A</div><div class="word">ASK<span>OBI</span> CARE</div></div>
-    <a class="topbar-phone" href="tel:+2348025451862"><span class="dot"></span>+234 802 545 1862</a>
+    <div style="display:flex; align-items:center; gap:18px;">
+      <div class="topbar-social">
+        <a href="https://instagram.com/YOUR_HANDLE" target="_blank" title="Instagram">IG</a>
+        <a href="https://facebook.com/YOUR_PAGE" target="_blank" title="Facebook">FB</a>
+      </div>
+      <a class="topbar-phone" href="tel:+2348025451862"><span class="dot"></span>+234 802 545 1862</a>
+    </div>
   </div>
 </div>
 
@@ -371,7 +418,7 @@
         <span data-lab="2">2. Loved One</span>
         <span data-lab="3">3. Your Details</span>
         <span data-lab="4">4. Schedule</span>
-        <span data-lab="5">5. Confirm</span>
+        <span data-lab="5">5. Confirm &amp; Pay</span>
       </div>
     </div>
 
@@ -549,7 +596,7 @@
             <div class="radio-pills"><div class="pill" data-group="hosp" data-val="Yes">Yes</div><div class="pill" data-group="hosp" data-val="No">No</div></div>
           </div>
           <div class="field">
-            <label>Does {name} live alone?</label>
+            <label>Does the person live alone?</label>
             <div class="radio-pills"><div class="pill" data-group="alone" data-val="Yes">Yes</div><div class="pill" data-group="alone" data-val="No">No</div></div>
           </div>
         </div>
@@ -574,7 +621,7 @@
           <div class="field"><label>Phone number <span class="hint">(WhatsApp preferred)</span></label><input type="tel" id="b_phone" placeholder="+234" required></div>
         </div>
         <div class="row2">
-          <div class="field"><label>Email address</label><input type="email" id="b_email"></div>
+          <div class="field"><label>Email address <span class="hint">(receipt sent here)</span></label><input type="email" id="b_email" required></div>
           <div class="field">
             <label>Preferred contact method</label>
             <div class="radio-pills">
@@ -589,7 +636,7 @@
           <div class="field"><label>Emergency contact phone</label><input type="tel" id="b_ec_phone"></div>
         </div>
 
-        <div class="req-warn" id="warnStep3">Please provide your name and phone number to continue.</div>
+        <div class="req-warn" id="warnStep3">Please provide your name, phone number and email to continue (email is needed for the payment receipt).</div>
       </div>
 
       <!-- STEP 4: SCHEDULE -->
@@ -626,10 +673,10 @@
         <div class="field"><label>Additional notes or special requests <span class="hint">(optional)</span></label><textarea id="s_notes"></textarea></div>
       </div>
 
-      <!-- STEP 5: CONFIRM -->
+      <!-- STEP 5: CONFIRM + PAY -->
       <div class="step-panel" data-step="5">
-        <h3 class="step-title">Review &amp; confirm</h3>
-        <p class="step-sub">Please check the details below before sending your booking request.</p>
+        <h3 class="step-title">Review, confirm &amp; pay</h3>
+        <p class="step-sub">Please check the details below, then secure your booking with a deposit.</p>
 
         <div class="summary-card">
           <h4>Selected Plan</h4>
@@ -655,13 +702,23 @@
           to new clients (waived if a package is confirmed within 7 days).</span>
         </label>
 
-        <div class="req-warn" id="warnStep5">Please confirm the consent box to send your booking.</div>
+        <div class="req-warn" id="warnStep5">Please confirm the consent box before paying or sending your booking.</div>
 
-        <div class="send-options" style="margin-top:18px;">
-          <a href="#" id="sendWa" class="send-btn wa" target="_blank">Send via WhatsApp</a>
-          <a href="#" id="sendMail" class="send-btn mail">Send via Email</a>
+        <div class="pay-box">
+          <h4>Secure your booking</h4>
+          <p>Pay the ₦25,000 assessment fee now to lock in your slot. Payment is processed by Paystack —
+             AskObi Care never sees or stores your card details.</p>
+          <button class="pay-btn" id="payBtn" type="button">🔒 Pay ₦25,000 &amp; Confirm Booking</button>
+          <div class="pay-secure">🔒 256-bit encrypted · Powered by Paystack</div>
         </div>
-        <p class="send-note">Both options open with your booking details pre-filled — nothing is sent until you tap Send.</p>
+
+        <div class="altline">or, if you'd rather not pay online yet</div>
+
+        <div class="send-options">
+          <a href="#" id="sendWa" class="send-btn wa" target="_blank">Send Request via WhatsApp</a>
+          <a href="#" id="sendMail" class="send-btn mail">Send Request via Email</a>
+        </div>
+        <p class="send-note">These options save your booking to our system and open with your details pre-filled — nothing is charged.</p>
       </div>
 
     </div>
@@ -678,6 +735,11 @@
     <div class="mark" style="border-color:var(--gold);">A</div><div class="word">ASK<span style="color:var(--gold);">OBI</span> CARE</div>
   </div>
   <p class="foot-tag">"They cared for you. Now let someone care for them."</p>
+  <div class="foot-social">
+    <a href="https://instagram.com/YOUR_HANDLE" target="_blank">IG</a>
+    <a href="https://facebook.com/YOUR_PAGE" target="_blank">FB</a>
+    <a href="https://wa.me/2348025451862" target="_blank">WA</a>
+  </div>
   <p class="foot-contact">+234 802 545 1862 &nbsp;•&nbsp; askobihealthcare@gmail.com &nbsp;•&nbsp; Lagos, Nigeria</p>
   <p class="foot-fine">AskObi Care — Confidential booking form. Information submitted is used solely to prepare your care plan.</p>
 </footer>
@@ -685,11 +747,22 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // ============================================================
+  // SUPABASE CLIENT
+  // ============================================================
+  const cfg = window.ASKOBI_CONFIG;
+  let supabase = null;
+  if (cfg.SUPABASE_URL && cfg.SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL") {
+    supabase = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  }
+
   // ---------------- state ----------------
   let currentStep = 1;
   const totalSteps = 5;
-  let selectedPlan = null; // {name, price, desc}
+  let selectedPlan = null;
   let customPickedActive = false;
+  let bookingSaved = false; // becomes true once a row exists in Supabase for this session
+  let bookingRowId = null;
 
   const matrix = {
     2:[85000,155000,220000,275000],
@@ -797,7 +870,7 @@
       s.classList.toggle('on', parseInt(s.dataset.lab,10)===n);
     });
     document.getElementById('backBtn').style.visibility = n===1 ? 'hidden':'visible';
-    document.getElementById('nextBtn').textContent = n===totalSteps ? 'Finish' : 'Continue →';
+    document.getElementById('nextBtn').style.display = n===totalSteps ? 'none' : 'inline-block';
     if(n===totalSteps) buildSummary();
     window.scrollTo({top: document.getElementById('wizard').offsetTop - 70, behavior:'smooth'});
   }
@@ -817,7 +890,9 @@
       return ok;
     }
     if(n===3){
-      const ok = document.getElementById('b_name').value.trim() && document.getElementById('b_phone').value.trim();
+      const ok = document.getElementById('b_name').value.trim() &&
+                 document.getElementById('b_phone').value.trim() &&
+                 document.getElementById('b_email').value.trim();
       document.getElementById('warnStep3').classList.toggle('show', !ok);
       return ok;
     }
@@ -825,7 +900,6 @@
   }
 
   function nextStep(){
-    if(currentStep === totalSteps){ submitBooking(); return; }
     if(!validateStep(currentStep)) return;
     currentStep = Math.min(totalSteps, currentStep+1);
     showStep(currentStep);
@@ -835,7 +909,7 @@
     showStep(currentStep);
   }
 
-  // ---------------- summary + message building ----------------
+  // ---------------- summary ----------------
   function buildSummary(){
     const planHtml = selectedPlan ? `
       <div class="summary-row"><span class="k">Plan</span><span class="v">${selectedPlan.name}</span></div>
@@ -884,6 +958,120 @@
 
   function val(id){ return (document.getElementById(id).value || '').trim(); }
 
+  function collectBookingObject(){
+    return {
+      plan_name: selectedPlan ? selectedPlan.name : null,
+      plan_details: selectedPlan ? selectedPlan.desc : null,
+      plan_price: selectedPlan ? selectedPlan.price : null,
+      patient_name: val('p_name'),
+      patient_dob: val('p_dob'),
+      patient_gender: val('p_gender'),
+      relationship: val('p_relationship'),
+      address: val('p_address'),
+      reason_for_care: selectedReason(),
+      medical_conditions: selectedFromChips('conditionChips'),
+      medications: val('p_meds'),
+      allergies: val('p_allergies'),
+      mobility: val('p_mobility'),
+      cognitive_status: val('p_cognitive'),
+      hospitalised_recently: selectedFromPillGroup('hosp'),
+      lives_alone: selectedFromPillGroup('alone'),
+      physician: val('p_physician'),
+      preferred_language: val('p_language'),
+      dietary_notes: val('p_dietary'),
+      booker_name: val('b_name'),
+      booker_phone: val('b_phone'),
+      booker_email: val('b_email'),
+      preferred_contact: selectedFromPillGroup('contact'),
+      emergency_contact_name: val('b_ec_name'),
+      emergency_contact_phone: val('b_ec_phone'),
+      start_date: val('s_start') || null,
+      time_window: val('s_window'),
+      preferred_days: selectedFromChips('dayChips'),
+      addons: selectedFromChips('addonChips'),
+      notes: val('s_notes'),
+      payment_status: 'pending',
+      payment_reference: null,
+      created_at: new Date().toISOString()
+    };
+  }
+
+  // ---------------- save to Supabase ----------------
+  async function saveBookingToSupabase(extra){
+    if(!supabase){
+      console.warn('Supabase not configured — skipping database save.');
+      return null;
+    }
+    const row = Object.assign(collectBookingObject(), extra || {});
+    const { data, error } = await supabase.from('bookings').insert([row]).select();
+    if(error){
+      console.error('Supabase insert error:', error);
+      showToast('Could not save to database — you can still send via WhatsApp/Email.', true);
+      return null;
+    }
+    bookingSaved = true;
+    bookingRowId = data && data[0] ? data[0].id : null;
+    return bookingRowId;
+  }
+
+  async function updateBookingPaymentStatus(reference){
+    if(!supabase || !bookingRowId) return;
+    await supabase.from('bookings')
+      .update({ payment_status:'paid', payment_reference: reference })
+      .eq('id', bookingRowId);
+  }
+
+  // ---------------- Paystack payment ----------------
+  document.getElementById('payBtn').addEventListener('click', async ()=>{
+    if(!document.getElementById('consentBox').checked){
+      document.getElementById('warnStep5').classList.add('show');
+      return;
+    }
+    const email = val('b_email');
+    if(!email){
+      showToast('Please add your email in Step 3 before paying.', true);
+      return;
+    }
+    if(!cfg.PAYSTACK_PUBLIC_KEY || cfg.PAYSTACK_PUBLIC_KEY === "YOUR_PAYSTACK_PUBLIC_KEY"){
+      showToast('Payment isn\'t set up yet — use WhatsApp or Email below instead.', true);
+      return;
+    }
+
+    const payBtn = document.getElementById('payBtn');
+    payBtn.disabled = true;
+    payBtn.textContent = 'Preparing payment…';
+
+    // Save the booking BEFORE payment so no data is lost even if payment is abandoned
+    await saveBookingToSupabase();
+
+    const handler = PaystackPop.setup({
+      key: cfg.PAYSTACK_PUBLIC_KEY,
+      email: email,
+      amount: cfg.ASSESSMENT_FEE_KOBO,
+      currency: "NGN",
+      ref: 'ASKOBI-' + Date.now(),
+      metadata: {
+        custom_fields: [
+          { display_name: "Patient Name", variable_name: "patient_name", value: val('p_name') },
+          { display_name: "Plan", variable_name: "plan", value: selectedPlan ? selectedPlan.name : 'N/A' }
+        ]
+      },
+      callback: function(response){
+        updateBookingPaymentStatus(response.reference);
+        showToast('Payment successful! Reference: ' + response.reference);
+        payBtn.textContent = '✓ Paid — Booking Confirmed';
+        // also fire off a WhatsApp notification to the coordinator
+        window.open(waLink(), '_blank');
+      },
+      onClose: function(){
+        payBtn.disabled = false;
+        payBtn.textContent = '🔒 Pay ₦25,000 & Confirm Booking';
+      }
+    });
+    handler.openIframe();
+  });
+
+  // ---------------- WhatsApp / Email fallback ----------------
   function buildMessage(){
     let lines = [];
     lines.push("NEW ASKOBI CARE BOOKING REQUEST");
@@ -927,38 +1115,36 @@
     return lines.join("\n");
   }
 
+  function waLink(){
+    return "https://wa.me/" + cfg.NOTIFY_WHATSAPP + "?text=" + encodeURIComponent(buildMessage());
+  }
+
   function wireSendButtons(){
     const msg = buildMessage();
-    document.getElementById('sendWa').href = "https://wa.me/2348025451862?text=" + encodeURIComponent(msg);
-    document.getElementById('sendMail').href = "mailto:askobihealthcare@gmail.com?subject=" +
+    document.getElementById('sendWa').href = waLink();
+    document.getElementById('sendMail').href = "mailto:" + cfg.NOTIFY_EMAIL + "?subject=" +
       encodeURIComponent("New Care Booking Request — " + (val('p_name')||'New Client')) +
       "&body=" + encodeURIComponent(msg);
   }
 
   ['sendWa','sendMail'].forEach(id=>{
-    document.getElementById(id).addEventListener('click', function(e){
+    document.getElementById(id).addEventListener('click', async function(e){
       if(!document.getElementById('consentBox').checked){
         e.preventDefault();
         document.getElementById('warnStep5').classList.add('show');
         return;
       }
-      showToast("Opening your booking request…");
+      await saveBookingToSupabase();
+      showToast("Booking saved — opening your request…");
     });
   });
 
-  function submitBooking(){
-    if(!document.getElementById('consentBox').checked){
-      document.getElementById('warnStep5').classList.add('show');
-      return;
-    }
-    document.getElementById('sendWa').click();
-  }
-
-  function showToast(text){
+  function showToast(text, isError){
     const t = document.getElementById('toast');
     t.textContent = text;
+    t.classList.toggle('error', !!isError);
     t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'), 2400);
+    setTimeout(()=>t.classList.remove('show'), 3200);
   }
 
   showStep(1);
