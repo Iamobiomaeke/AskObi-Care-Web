@@ -750,9 +750,8 @@
   // SUPABASE CLIENT
   // ============================================================
   const cfg = window.ASKOBI_CONFIG;
-  let supabase = null;
-  if (cfg.SUPABASE_URL && cfg.SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL") {
-    supabase = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+ let sb = null;  if (cfg.SUPABASE_URL && cfg.SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL") {
+    supabase = window.sb.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
   }
 
   // ---------------- state ----------------
@@ -997,12 +996,12 @@
 
   // ---------------- save to Supabase ----------------
   async function saveBookingToSupabase(extra){
-    if(!supabase){
+   if(!sb){ 
       console.warn('Supabase not configured — skipping database save.');
       return null;
     }
     const row = Object.assign(collectBookingObject(), extra || {});
-    const { data, error } = await supabase.from('bookings').insert([row]).select();
+    const { data, error } = await sb.from('bookings').insert([row]).select();
     if(error){
       console.error('Supabase insert error:', error);
       showToast('Could not save to database — you can still send via WhatsApp/Email.', true);
@@ -1014,8 +1013,8 @@
   }
 
   async function updateBookingPaymentStatus(reference){
-    if(!supabase || !bookingRowId) return;
-    await supabase.from('bookings')
+    if(!sb|| !bookingRowId) return;
+    await sb.from('bookings')
       .update({ payment_status:'paid', payment_reference: reference })
       .eq('id', bookingRowId);
   }
